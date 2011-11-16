@@ -41,9 +41,16 @@ ccWindow input =
                    Just (s,e) -> Just (s+1,e+1)
                    Nothing    -> Nothing
 
-redact line start end = prefix ++ (replicate (end - start) 'X') ++ suffix
+between xs start end = take (end - start) $ drop start xs
+
+redact line start end = prefix ++ redacted ++ suffix
     where (prefix,_) = splitAt start line
           (_,suffix) = splitAt end line
+          middle = take (end - start) $ drop start line
+          redact' c = if isDigit c
+                      then 'X'
+                      else c
+          redacted = map redact' middle
 
 redactLine :: IO ()
 redactLine = do
