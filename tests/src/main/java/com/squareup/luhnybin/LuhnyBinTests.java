@@ -85,8 +85,8 @@ public class LuhnyBinTests extends TestSuite {
 
     for (int i = MIN_LENGTH; i <= MAX_LENGTH; i++) {
         test("2 matching card numbers on same line")
-            .send(randomNumber(i) + nonMatchingSequence(i) + randomNumber(i))
-            .expect(mask(i) + nonMatchingSequence(i) + mask(i));
+            .send(randomNumber(i) + " ordered 2 items " + randomNumber(i))
+            .expect(mask(i) + " ordered 2 items " + mask(i));
     }
   }
 
