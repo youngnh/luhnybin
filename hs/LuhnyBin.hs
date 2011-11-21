@@ -32,32 +32,34 @@ ccNum input = msum [checkCC 16, checkCC 15, checkCC 14]
                         Nothing            -> Nothing
 
 ccWindow [] = Nothing
-ccWindow input = 
-    case ccNum input of
-      Just end -> case ccWindow (tail input) of
-                    Just (_,e) -> Just (0,max end (e+1))
-                    Nothing    -> Just (0,end)
-      Nothing -> case ccWindow (tail input) of
-                   Just (s,e) -> Just (s+1,e+1)
-                   Nothing    -> Nothing
+ccWindow input = case ccEnd input of
+                   Just end -> Just (0,end)
+                   Nothing  -> case ccWindow (tail input) of
+                                 Just (s,e) -> Just (s+1,e+1)
+                                 Nothing    -> Nothing
+    where ccEnd s = case ccNum s of
+                      Just end -> case ccEnd (tail s) of
+                                    Just end' -> Just $ max end (end' + 1)
+                                    Nothing   -> Just end
+                      Nothing  -> Nothing
 
 between xs start end = take (end - start) $ drop start xs
 
-redact line start end = prefix ++ redacted ++ suffix
-    where (prefix,_) = splitAt start line
-          (_,suffix) = splitAt end line
-          middle = take (end - start) $ drop start line
-          redact' c = if isDigit c
-                      then 'X'
-                      else c
-          redacted = map redact' middle
+redact line = case ccWindow line of
+                Just (start, end) -> prefix ++ redacted ++ (redact suffix)
+                    where prefix = take start line
+                          suffix = drop end line
+                          middle = take (end - start) $ drop start line
+                          redact' c = if isDigit c
+                                      then 'X'
+                                      else c
+                          redacted = map redact' middle
+                Nothing -> line
 
 redactLine :: IO ()
 redactLine = do
   line <- getLine
-  putStrLn $ case ccWindow line of
-               Just (start, end) -> redact line start end
-               Nothing           -> line
+  putStrLn $ redact line
 
 endProgram :: IOError -> IO ()
 endProgram _ = putStrLn ""
